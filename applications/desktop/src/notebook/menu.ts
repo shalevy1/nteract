@@ -63,7 +63,8 @@ export function showSaveAsDialog(): Promise<string> {
       options.defaultPath = defaultPath;
     }
 
-    dialog.showSaveDialog(options, filepath => {
+    dialog.showSaveDialog(options).then(result => {
+      const filepath = result.filePath;
       // If there was a filepath set and the extension name for it is blank,
       // append `.ipynb`
       resolve(
@@ -115,8 +116,8 @@ export function promptUserAboutNewKernel(
   filepath: string
 ): Promise<void> {
   return new Promise(resolve => {
-    dialog.showMessageBox(
-      {
+    dialog
+      .showMessageBox({
         type: "question",
         buttons: ["Launch New Kernel", "Don't Launch New Kernel"],
         title: "New Kernel Needs to Be Launched",
@@ -126,8 +127,9 @@ export function promptUserAboutNewKernel(
           "The kernel executing your code thinks your notebook is still in " +
           "the old location. Would you like to launch a new kernel to match " +
           "it with the new location of the notebook?"
-      },
-      index => {
+      })
+      .then((result: { response: number; checkboxChecked: boolean }) => {
+        const index = result.response;
         if (index === 0) {
           const state = store.getState();
           const oldKernelRef = selectors.kernelRefByContentRef(state, ownProps);
@@ -159,8 +161,7 @@ export function promptUserAboutNewKernel(
           );
         }
         resolve();
-      }
-    );
+      });
   });
 }
 
@@ -588,15 +589,12 @@ export function exportPDF(
     )
   );
 
-  remote.getCurrentWindow().webContents.printToPDF(
-    {
+  remote
+    .getCurrentWindow()
+    .webContents.printToPDF({
       printBackground: true
-    },
-    (error, data) => {
-      if (error) {
-        throw error;
-      }
-
+    })
+    .then(data => {
       // Restore the modified cells to their unexpanded state.
       unexpandedCells.map((cellId: string) =>
         store.dispatch(
@@ -624,8 +622,10 @@ export function exportPDF(
           }
         });
       });
-    }
-  );
+    })
+    .catch((error: Error) => {
+      throw error;
+    });
 }
 
 export function triggerSaveAsPDF(

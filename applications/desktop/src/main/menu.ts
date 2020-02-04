@@ -265,7 +265,8 @@ export function loadFullMenu(store = global.store) {
           opts.defaultPath = app.getPath("home");
         }
 
-        dialog.showOpenDialog(opts, (fname?: string[]) => {
+        dialog.showOpenDialog(opts).then(result => {
+          const fname = result.filePaths;
           if (fname) {
             launch(fname[0]);
             app.addRecentDocument(fname[0]);
@@ -299,7 +300,8 @@ export function loadFullMenu(store = global.store) {
           opts.defaultPath = app.getPath("home");
         }
 
-        dialog.showSaveDialog(opts, filename => {
+        dialog.showSaveDialog(opts).then(result => {
+          const filename = result.filePath;
           if (!filename) {
             return;
           }
@@ -714,7 +716,8 @@ export function loadTrayMenu(store = global.store) {
         opts.defaultPath = app.getPath("home");
       }
 
-      dialog.showOpenDialog(opts, (fname?: string[]) => {
+      dialog.showOpenDialog(opts).then(result => {
+        const fname = result.filePaths;
         if (fname) {
           launch(fname[0]);
           app.addRecentDocument(fname[0]);

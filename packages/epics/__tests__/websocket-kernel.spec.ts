@@ -41,14 +41,15 @@ describe("launchWebSocketKernelEpic", () => {
     const contentRef = "fakeContentRef";
     const kernelRef = "fake";
     const hostRef = "fakeHostRef";
+    const closeObserver = { next: () => {} }
     const value = {
       app: stateModule.makeAppRecord({
         host: stateModule.makeJupyterHostRecord({
           type: "jupyter",
           token: "eh",
-          basePath: "http://localhost:8888/"
+          basePath: "http://localhost:8888/",
+          closeObserver
         }),
-        notificationSystem: { addNotification: jest.fn() }
       }),
       comms: stateModule.makeCommsRecord(),
       config: Immutable.Map({}),
@@ -75,7 +76,8 @@ describe("launchWebSocketKernelEpic", () => {
               [hostRef]: stateModule.makeJupyterHostRecord({
                 type: "jupyter",
                 token: "eh",
-                basePath: "http://localhost:8888/"
+                basePath: "http://localhost:8888/",
+                closeObserver
               })
             })
           })
@@ -149,7 +151,6 @@ describe("interruptKernelEpic", () => {
           token: "eh",
           basePath: "http://localhost:8888/"
         }),
-        notificationSystem: { addNotification: jest.fn() }
       }),
       comms: stateModule.makeCommsRecord(),
       config: Immutable.Map({})
@@ -201,7 +202,6 @@ describe("interruptKernelEpic", () => {
           token: "eh",
           basePath: "http://localhost:8888/"
         }),
-        notificationSystem: { addNotification: jest.fn() }
       }),
       comms: stateModule.makeCommsRecord(),
       config: Immutable.Map({})
@@ -248,7 +248,6 @@ describe("restartKernelEpic", () => {
           token: "eh",
           basePath: "http://localhost:8888/"
         }),
-        notificationSystem: { addNotification: jest.fn() }
       }),
       comms: stateModule.makeCommsRecord(),
       config: Immutable.Map({})
@@ -299,7 +298,6 @@ describe("restartKernelEpic", () => {
         host: stateModule.makeLocalHostRecord({
           type: "local"
         }),
-        notificationSystem: { addNotification: jest.fn() }
       }),
       comms: stateModule.makeCommsRecord(),
       config: Immutable.Map({})
@@ -352,7 +350,6 @@ describe("restartKernelEpic", () => {
           token: "eh",
           basePath: "http://localhost:8888/"
         }),
-        notificationSystem: { addNotification: jest.fn() }
       }),
       comms: stateModule.makeCommsRecord(),
       config: Immutable.Map({})
@@ -405,7 +402,6 @@ describe("restartKernelEpic", () => {
           token: "eh",
           basePath: "http://localhost:8888/"
         }),
-        notificationSystem: { addNotification: jest.fn() }
       }),
       comms: stateModule.makeCommsRecord(),
       config: Immutable.Map({})
@@ -456,7 +452,6 @@ describe("restartKernelEpic", () => {
           token: "eh",
           basePath: "http://localhost:8888/"
         }),
-        notificationSystem: { addNotification: jest.fn() }
       }),
       comms: stateModule.makeCommsRecord(),
       config: Immutable.Map({})
@@ -513,7 +508,6 @@ describe("restartKernelEpic", () => {
           token: "eh",
           basePath: "http://localhost:8888/"
         }),
-        notificationSystem: { addNotification: jest.fn() }
       }),
       comms: stateModule.makeCommsRecord(),
       config: Immutable.Map({})

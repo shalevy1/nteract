@@ -1,6 +1,6 @@
 {
   "name": "@nteract/styles",
-  "version": "2.1.2",
+  "version": "2.1.5-alpha.0",
   "description": "css for use in nteract apps",
   "main": "index.js",
   "types": "index.d.ts",
@@ -9,7 +9,8 @@
     "app.css",
     "editor-overrides.css",
     "global-variables.css",
-    "themes"
+    "themes",
+    "markdown"
   ],
   "scripts": {},
   "publishConfig": {

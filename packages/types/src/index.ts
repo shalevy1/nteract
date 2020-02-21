@@ -1,7 +1,5 @@
-import * as Immutable from "immutable";
-
 import { MediaBundle } from "@nteract/commutable";
-import { Notification } from "react-notification-system";
+import * as Immutable from "immutable";
 import {
   EntitiesRecordProps,
   makeEmptyHostRecord,
@@ -14,6 +12,9 @@ export * from "./content-provider";
 export * from "./entities";
 export * from "./ids";
 export * from "./refs";
+
+import * as errors from "./errors";
+export { errors };
 
 export interface KernelspecMetadata {
   display_name: string;
@@ -131,9 +132,6 @@ export type CoreRecord = Immutable.RecordOf<StateRecordProps>;
 export interface AppRecordProps {
   host: HostRecord;
   githubToken?: string | null;
-  notificationSystem: {
-    addNotification: (msg: Notification) => void;
-  };
   isSaving: boolean;
   lastSaved?: Date | null;
   configLastSaved?: Date | null;
@@ -145,20 +143,6 @@ export interface AppRecordProps {
 export const makeAppRecord = Immutable.Record<AppRecordProps>({
   host: makeEmptyHostRecord(),
   githubToken: null,
-  notificationSystem: {
-    addNotification: (msg: Notification) => {
-      let logger = console.log.bind(console);
-      switch (msg.level) {
-        case "error":
-          logger = console.error.bind(console);
-          break;
-        case "warning":
-          logger = console.warn.bind(console);
-          break;
-      }
-      logger(msg);
-    }
-  },
   isSaving: false,
   lastSaved: null,
   configLastSaved: null,
@@ -175,12 +159,3 @@ export interface AppState {
   config: ConfigState;
   core: CoreRecord;
 }
-
-export type AppStateRecord = Immutable.RecordOf<AppState>;
-
-export const makeAppStateRecord = Immutable.Record<AppState>({
-  app: makeAppRecord(),
-  comms: makeCommsRecord(),
-  config: Immutable.Map<string, any>(),
-  core: makeStateRecord()
-});

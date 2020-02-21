@@ -1,6 +1,7 @@
 import { actions as actionsModule, state as stateModule } from "@nteract/core";
 import { mockAppState } from "@nteract/fixtures";
 import { createMessage, JupyterMessage, MessageType } from "@nteract/messaging";
+import { sendNotification } from "@nteract/mythic-notifications";
 import * as Immutable from "immutable";
 import { ActionsObservable, StateObservable } from "redux-observable";
 import { of, Subject } from "rxjs";
@@ -108,9 +109,7 @@ describe("acquireKernelInfo", () => {
           })
         })
       }),
-      app: stateModule.makeAppRecord({
-        notificationSystem: { addNotification: () => {} }
-      }),
+      app: stateModule.makeAppRecord({}),
       comms: stateModule.makeCommsRecord(),
       config: Immutable.Map({})
     };
@@ -259,9 +258,7 @@ describe("restartKernelEpic", () => {
           })
         })
       }),
-      app: stateModule.makeAppRecord({
-        notificationSystem: { addNotification: () => {} }
-      })
+      app: stateModule.makeAppRecord({})
     };
 
     const testScheduler = buildScheduler();
@@ -297,11 +294,16 @@ describe("restartKernelEpic", () => {
         e: actionsModule.restartKernelSuccessful({
           kernelRef: newKernelRef,
           contentRef
+        }),
+        n: sendNotification.create({
+          title: "Kernel Restarting...",
+          message: "Kernel unknown is restarting.",
+          level: "success"
         })
       };
 
-      const inputMarbles = "a---b|";
-      const outputMarbles = "(cd)e|";
+      const inputMarbles = "a----b|";
+      const outputMarbles = "(cdn)e|";
 
       const inputAction$ = hot(inputMarbles, inputActions);
       const outputAction$ = restartKernelEpic(
@@ -338,9 +340,7 @@ describe("restartKernelEpic", () => {
           })
         })
       }),
-      app: stateModule.makeAppRecord({
-        notificationSystem: { addNotification: () => {} }
-      })
+      app: stateModule.makeAppRecord({})
     };
 
     const testScheduler = buildScheduler();
@@ -377,11 +377,16 @@ describe("restartKernelEpic", () => {
           kernelRef: newKernelRef,
           contentRef: "contentRef"
         }),
-        f: actionsModule.executeAllCells({ contentRef: "contentRef" })
+        f: actionsModule.executeAllCells({ contentRef: "contentRef" }),
+        n: sendNotification.create({
+          title: "Kernel Restarting...",
+          message: "Kernel unknown is restarting.",
+          level: "success"
+        })
       };
 
-      const inputMarbles = "a---b---|";
-      const outputMarbles = "(cd)(ef)|";
+      const inputMarbles = "a----b---|";
+      const outputMarbles = "(cdn)(ef)|";
 
       const inputAction$ = hot(inputMarbles, inputActions);
       const outputAction$ = restartKernelEpic(
@@ -420,9 +425,7 @@ describe("restartKernelEpic", () => {
           })
         })
       }),
-      app: stateModule.makeAppRecord({
-        notificationSystem: { addNotification: () => {} }
-      })
+      app: stateModule.makeAppRecord({})
     };
 
     const responses = await restartKernelEpic(
@@ -464,8 +467,8 @@ describe("launchKernelWhenNotebookSet", () => {
       () => done()
     );
   });
-  it("emits a LAUNCH_KERNEL_BY_NAME action for valid notebook", done => {
-    const state = mockAppState({});
+  it("does nothing if content already has a kernel", done => {
+    let state = mockAppState({});
     const contentRef: string = state.core.entities.contents.byRef
       .keySeq()
       .first();
@@ -473,9 +476,44 @@ describe("launchKernelWhenNotebookSet", () => {
     const action$ = ActionsObservable.of(
       actionsModule.fetchContentFulfilled({
         contentRef,
-        filepath: "my-file.txt",
+        filepath: "my-notebook",
         model: {},
         kernelRef
+      })
+    );
+    const state$ = new StateObservable(new Subject(), state);
+    const obs = launchKernelWhenNotebookSetEpic(action$, state$);
+    obs.pipe(toArray()).subscribe(
+      actions => {
+        const types = actions.map(({ type }) => type);
+        expect(types).toEqual([]);
+      },
+      err => done.fail(err), // It should not error in the stream
+      () => done()
+    );
+  });
+  it("emits a LAUNCH_KERNEL_BY_NAME action for valid notebook and unlaunched kernel", done => {
+    const contentRef = stateModule.createContentRef();
+    const state = {
+      core: {
+        entities: stateModule.makeEntitiesRecord({
+          contents: stateModule.makeContentsRecord({
+            byRef: Immutable.Map({
+              [contentRef]: stateModule.makeNotebookContentRecord({
+                model: stateModule.makeDocumentRecord({
+                  kernelRef: null
+                })
+              })
+            })
+          })
+        })
+      }
+    };
+    const action$ = ActionsObservable.of(
+      actionsModule.fetchContentFulfilled({
+        contentRef,
+        filepath: "my-file.txt",
+        model: {}
       })
     );
     const state$ = new StateObservable(new Subject(), state);

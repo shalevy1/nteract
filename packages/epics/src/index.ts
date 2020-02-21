@@ -1,11 +1,11 @@
 import { commListenEpic } from "./comm";
 import {
   autoSaveCurrentContentEpic,
+  closeNotebookEpic,
   fetchContentEpic,
-  saveContentEpic,
   saveAsContentEpic,
-  updateContentEpic,
-  closeNotebookEpic
+  saveContentEpic,
+  updateContentEpic
 } from "./contents";
 import {
   executeAllCellsEpic,
